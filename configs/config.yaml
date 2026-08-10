@@ -1,0 +1,83 @@
+# =============================================================================
+# AdaStress configuration
+# Every path here is relative to the project root unless it is absolute.
+# =============================================================================
+
+seed: 42
+device: "auto"   # "auto" | "cpu" | "cuda"
+
+data:
+  # Full raw dataset is intentionally NOT shipped with this repository.
+  # Point this at your own copy for real training. `data/sample_data.csv`
+  # is a small, de-identified slice included only so the pipeline can be
+  # smoke-tested end to end without any private data.
+  unlabelled_csv: "data/sample_data.csv"
+  labelled_csv: "data/sample_data.csv"
+  label_column: "Stress_Class"
+  subject_column: "Subject_ID"
+  context_columns: ["Task", "SessionPhase", "Activity"]
+  signal_columns:
+    - ACC_X
+    - ACC_Y
+    - ACC_Z
+    - ECG
+    - EDA
+    - Temp
+    - Resp
+    - ACC_X_wrist
+    - ACC_Y_wrist
+    - ACC_Z_wrist
+    - BVP
+    - EDA_wrist
+    - Temp_wrist
+
+window:
+  window_sec: 60
+  stride_sec: 30
+  fs: 1
+
+ssl:
+  batch_size: 128
+  epochs: 20
+  lr: 0.001
+  temperature: 0.5
+  proj_dim: 128
+  lstm_hidden: 128        # encoder output = 2 * lstm_hidden (bidirectional)
+
+classifier:
+  batch_size: 64
+  epochs: 20
+  lr: 0.001
+  dropout: 0.3
+  use_context_gate: true
+  context_embed_dim: 32
+
+drift:
+  num_bins: 20
+  history_window: 300      # number of recent windows kept in the runtime buffer
+  min_buffer_for_check: 15 # small on purpose: the bundled sample_data.csv only has a
+                           # few dozen windows. Raise this back up (e.g. 50-300) once
+                           # you point the pipeline at your own, larger dataset.
+  check_every_n_windows: 5
+  smoothing_eps: 1.0e-6
+
+continual_learning:
+  method: "ewc"             # "ewc" | "finetune" | "l2"
+  ewc_lambda: 400.0
+  l2_lambda: 0.01
+  adapt_epochs: 5
+  adapt_lr: 1.0e-4
+  adapt_batch_size: 8       # small on purpose to match the bundled demo buffer size;
+                             # raise toward 32-64 for real deployment-scale buffers.
+  fisher_num_batches: 50    # cap on batches used to estimate the Fisher diagonal
+
+paths:
+  checkpoints_dir: "checkpoints"
+  encoder_ckpt: "checkpoints/encoder.pth"
+  scaler_ckpt: "checkpoints/scaler.pkl"
+  meta_json: "checkpoints/meta.json"
+  classifier_ckpt: "checkpoints/classifier.pth"
+  fisher_ckpt: "checkpoints/fisher.pt"
+  theta_star_ckpt: "checkpoints/theta_star.pt"
+  drift_reference_ckpt: "checkpoints/drift_reference.pt"
+  results_dir: "results"
