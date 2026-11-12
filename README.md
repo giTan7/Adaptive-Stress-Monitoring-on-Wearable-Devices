@@ -167,8 +167,7 @@ If you use this code, please cite:
   title   = {Adaptive Stress Monitoring on Wearable Devices for Long-Term Consumer Health},
   author  = {Ara, Tarannum and Mitra, Bivas},
   journal = {IEEE Transactions on Consumer Electronics},
-  year    = {2026},
-  note    = {Under review}
+  year    = {2026}
 }
 ```
 
